@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:walletconnect_flutter_dapp/models/chain_metadata.dart';
+import 'package:walletconnect_flutter_dapp/utils/Utils.dart';
 import 'package:walletconnect_flutter_dapp/utils/constants.dart';
 import 'package:walletconnect_flutter_dapp/utils/crypto/eip155.dart';
 import 'package:walletconnect_flutter_dapp/utils/crypto/helpers.dart';
@@ -26,6 +27,7 @@ class SessionWidget extends StatefulWidget {
 class SessionWidgetState extends State<SessionWidget> {
   @override
   Widget build(BuildContext context) {
+    print("sessiong widget ${Utils.networkId}");
     final List<Widget> children = [
       Text(
         widget.session.peer.metadata.name,
@@ -43,18 +45,37 @@ class SessionWidgetState extends State<SessionWidget> {
     // Get all of the accounts
     final List<String> namespaceAccounts = [];
 
-    // Loop through the namespaces, and get the accounts
-    for (final Namespace namespace in widget.session.namespaces.values) {
-      namespaceAccounts.addAll(namespace.accounts);
-    }
+
+
+
+        for (final Namespace namespace in widget.session.namespaces.values) {
+          namespaceAccounts.addAll(namespace.accounts);
+        }
+
+
 
     // Loop through the namespace accounts and build the widgets
-    for (final String namespaceAccount in namespaceAccounts) {
-      children.add(
-        _buildAccountWidget(
-          namespaceAccount,
-        ),
-      );
+    if(Utils.networkId.isEmpty) {
+
+      for (final String namespaceAccount in namespaceAccounts) {
+        children.add(
+          _buildAccountWidget(
+            namespaceAccount,
+          ),
+        );
+      }
+    }
+    else
+      {
+        for (final String namespaceAccount in namespaceAccounts) {
+          if(Utils.networkId.contains(namespaceAccount))
+            {
+        children.add(
+          _buildAccountWidget(
+            namespaceAccount,
+          ),
+        );}
+      }
     }
 
     // Add a delete button
@@ -161,18 +182,25 @@ class SessionWidgetState extends State<SessionWidget> {
           ),
           child: ElevatedButton(
             onPressed: () async {
-              Future<dynamic> future = callChainMethod(
+              callChainMethod(
                 chainMetadata.type,
                 method,
                 chainMetadata,
                 address,
-              );
-              MethodDialog.show(
-                context,
-                method,
-                future,
-              );
-              widget.launchRedirect();
+              ).then((future) {
+                print("asdhgasdfuhs $future");
+
+                MethodDialog.show(
+                  context,
+                  method,
+                  future,
+                ).then((value) {
+                  print("asdhgasdfuhs f");
+                  widget.launchRedirect();
+                });
+
+              });
+
             },
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all<Color>(
@@ -239,17 +267,22 @@ class SessionWidgetState extends State<SessionWidget> {
     String method,
     ChainMetadata chainMetadata,
     String address,
-  ) {
+  ) async {
+    print('asdhgasdfuhs swag $type method $method');
+
     switch (type) {
       case ChainType.eip155:
         print('swag');
-        return EIP155.callMethod(
+        Future<dynamic>  data = await  EIP155.callMethod(
           web3App: widget.web3App,
           topic: widget.session.topic,
           method: method.toEip155Method()!,
-          chainId: chainMetadata.namespace,
+          chainId: "eip155:5",//chainMetadata.namespace,
           address: address.toLowerCase(),
         );
+        print('asdhgasdfuhs swag data $data');
+
+        return data;
       // case ChainType.kadena:
       //   return Kadena.callMethod(
       //     web3App: widget.web3App,

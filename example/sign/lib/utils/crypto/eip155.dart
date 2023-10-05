@@ -87,7 +87,10 @@ class EIP155 {
     required String chainId,
     required String address,
   }) {
+    print('asdhgasdfuhs swag inside   method $method');
+
     switch (method) {
+
       case EIP155UIMethods.personalSign:
         return personalSign(
           web3App: web3App,
@@ -229,7 +232,7 @@ class EIP155 {
     required String chainId,
     required EthereumTransaction transaction,
   }) async {
-    return await web3App.request(
+    Future<dynamic> data =  await web3App.request(
       topic: topic,
       chainId: chainId,
       request: SessionRequestParams(
@@ -237,6 +240,8 @@ class EIP155 {
         params: [transaction.toJson()],
       ),
     );
+    print("data $data");
+    return data;
   }
 
   // static Future<dynamic> walletSwitchChain({

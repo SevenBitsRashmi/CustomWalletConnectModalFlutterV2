@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:walletconnect_flutter_dapp/models/chain_metadata.dart';
 import 'package:walletconnect_flutter_dapp/pages/wcm_page.dart';
+import 'package:walletconnect_flutter_dapp/utils/Utils.dart';
 import 'package:walletconnect_flutter_dapp/utils/crypto/chain_data.dart';
 import 'package:walletconnect_flutter_dapp/utils/crypto/helpers.dart';
 import 'package:walletconnect_flutter_dapp/utils/dart_defines.dart';
@@ -21,23 +22,36 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   IWeb3App? _web3App;
   bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     initialize();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    print("didchangeLifeCycleState $state");
+    if (state == AppLifecycleState.paused) {
+
+      // went to Background
+    }
+    if (state == AppLifecycleState.resumed) {
+      // came back to Foreground
+    }
+  }
+
   Future<void> initialize() async {
-    _web3App = Web3App(
-      core: Core(
-        projectId: DartDefines.projectId,
-      ),
-      metadata: const PairingMetadata(
+
+    _web3App = await Web3App.createInstance(
+      projectId:"8033ffdf0d5f7c7adbeb02a6ff4507e5", //DartDefines.projectId,
+      metadata: PairingMetadata(
         name: 'Flutter Dapp Example',
         description: 'Flutter Dapp Example',
         url: 'https://www.walletconnect.com/',
@@ -53,6 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _web3App!.onSessionEvent.subscribe(_onSessionEvent);
 
     await _web3App!.init();
+    //_web3App!.onSessionEvent.broadcast();
 
     // Loop through all the chain data
     for (final ChainMetadata chain in ChainData.chains) {
@@ -76,10 +91,13 @@ class _MyHomePageState extends State<MyHomePage> {
     _web3App!.onSessionPing.unsubscribe(_onSessionPing);
     _web3App!.onSessionEvent.unsubscribe(_onSessionEvent);
     super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+
   }
 
   @override
   Widget build(BuildContext context) {
+
     if (!_initialized) {
       return Center(
         child: CircularProgressIndicator(
@@ -129,6 +147,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _onSessionPing(SessionPing? args) {
+    print("sdsfj  _onSessionPing ${args}");
+
+    setState(() {
+
+    });
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -141,6 +164,23 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _onSessionEvent(SessionEvent? args) {
+
+    print("sdsfj ${args}");
+
+    if(args!=null&&args!.data!=null)
+      {
+        if(args!.data is int)
+          {
+           // Utils.networkId =args!.data.toString();
+          }
+        else {
+          Utils.networkId = args!.data[0];
+        }
+      }
+
+    setState(() {
+
+    });
     showDialog(
       context: context,
       builder: (BuildContext context) {

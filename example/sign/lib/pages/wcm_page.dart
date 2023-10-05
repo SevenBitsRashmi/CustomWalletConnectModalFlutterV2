@@ -10,7 +10,10 @@ import 'package:walletconnect_flutter_dapp/widgets/chain_button.dart';
 import 'package:walletconnect_flutter_dapp/widgets/session_widget.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:walletconnect_modal_flutter/walletconnect_modal_flutter.dart';
-
+import 'package:flutter/material.dart';
+import 'package:walletconnect_flutter_dapp/models/chain_metadata.dart';
+import 'package:walletconnect_flutter_dapp/utils/crypto/eip155.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 class WCMPage extends StatefulWidget {
   const WCMPage({
     super.key,
@@ -28,14 +31,40 @@ class _WCMPageState extends State<WCMPage> with SingleTickerProviderStateMixin {
 
   IWalletConnectModalService? _walletConnectModalService;
 
-  ChainMetadata? _firstChain;
+ // ChainMetadata? _firstChain;
   final List<ChainMetadata> _selectedChains = [];
+
+  ChainMetadata? _firstChain = ChainMetadata(
+    type: ChainType.eip155,
+    color: Colors.blue.shade300,
+    chainName: 'Ethereum',
+    namespace: 'eip155:1',
+    chainId: '1',
+    chainIcon: '692ed6ba-e569-459a-556a-776476829e00',
+    tokenName: 'ETH',
+    requiredNamespaces: {
+      'eip155': const RequiredNamespace(
+        methods: EIP155.ethRequiredMethods,
+        chains: ['eip155:1'],
+        events: EIP155.ethEvents,
+      ),
+    },
+    optionalNamespaces: {
+      'eip155': const RequiredNamespace(
+        methods: EIP155.ethOptionalMethods,
+        chains: ['eip155:1'],
+        events: [],
+      ),
+    },
+    rpcUrl: 'https://eth.drpc.org',
+  );
 
   bool _isConnected = false;
 
   @override
   void initState() {
     super.initState();
+    _selectedChains.add(_firstChain!);
 
     initialize();
   }
@@ -131,6 +160,7 @@ class _WCMPageState extends State<WCMPage> with SingleTickerProviderStateMixin {
         children: [
           WalletConnectModalConnect(
             service: _walletConnectModalService!,
+
           ),
           // WalletConnectModalConnect(
           //   service: _walletConnectModalService!,
@@ -209,7 +239,7 @@ class _WCMPageState extends State<WCMPage> with SingleTickerProviderStateMixin {
         }
       } else {
         _firstChain ??= chain;
-        _selectedChains.add(chain);
+    //   _selectedChains.add(chain);
       }
     });
     _updateRequiredNamespaces();
